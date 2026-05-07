@@ -130,11 +130,11 @@ wasm-pack build --target web --features wasm
 Then use in JavaScript:
 
 ```javascript
-import { disassemble } from "./pkg/armv7_disassembler.js";
+import {Decoder, Endian} from './pkg/armv7_disassembler.js'
 
-const bytes = new Uint8Array([0x56, 0x00, 0xa0, 0xe3]);
-const instructions = disassemble(bytes);
-console.log(instructions); // ["mov r0, #0x56"]
+const d = new Decoder(0, Endian.Little)
+const code = d.disassemble(new Uint8Array([0x04, 0xf0, 0x9d, 0xe5]))
+console.log(code)
 ```
 
 ---

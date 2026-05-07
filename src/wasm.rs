@@ -3,21 +3,23 @@
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
-use crate::disassembler::{Decoder as CoreDecoder, DisassemblerOptions, Endian, disassemble};
+use crate::disassembler::{
+    Decoder as CoreDecoder, DisassemblerOptions, Endian as AV7Endian, disassemble,
+};
 
 /// Endianness options natively exposed to WASM.
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
-pub enum WasmEndian {
+pub enum Endian {
     Little = 0,
-    Big = 1,
+    Big = 1 << 30,
 }
 
-impl From<WasmEndian> for Endian {
-    fn from(e: WasmEndian) -> Self {
+impl From<Endian> for AV7Endian {
+    fn from(e: Endian) -> Self {
         match e {
-            WasmEndian::Little => Endian::Little,
-            WasmEndian::Big => Endian::Big,
+            Endian::Little => AV7Endian::Little,
+            Endian::Big => AV7Endian::Big,
         }
     }
 }
@@ -26,17 +28,17 @@ impl From<WasmEndian> for Endian {
 #[wasm_bindgen]
 pub struct Decoder {
     start_address: u32,
-    endian: WasmEndian,
+    endian: Endian,
 }
 
 #[wasm_bindgen]
 impl Decoder {
     /// Create a new Decoder.
     #[wasm_bindgen(constructor)]
-    pub fn new(start_address: u32, endian: WasmEndian) -> Self {
+    pub fn new(start_address: Option<u32>, endian: Option<Endian>) -> Self {
         Self {
-            start_address,
-            endian,
+            start_address: start_address.unwrap_or(0),
+            endian: endian.unwrap_or(Endian::Little),
         }
     }
 
@@ -81,7 +83,7 @@ pub fn disassemble_armv7(bytes: &[u8]) -> Result<Array, JsError> {
 pub fn disassemble_armv7_big_endian(bytes: &[u8]) -> Result<Array, JsError> {
     let options = DisassemblerOptions {
         start_address: 0,
-        endian: Endian::Big,
+        endian: AV7Endian::Big,
     };
 
     let core_decoder = CoreDecoder::new(options);
