@@ -1,10 +1,14 @@
 use crate::decoder::decode_word;
 use crate::error::DecodeError;
 
+/// Endianness selection with distinct discriminants.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Endian {
-    Big,
-    Little,
+    /// Big‑endian mode – numeric value.
+    Big = 1 << 30,
+
+    /// Little‑endian mode – numeric value 0.
+    Little = 0,
 }
 
 pub struct DisassemblerOptions {
