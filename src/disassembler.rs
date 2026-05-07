@@ -29,7 +29,7 @@ pub fn disassemble_with_options(
     bytes: &[u8],
     options: DisassemblerOptions,
 ) -> Result<Vec<String>, DecodeError> {
-    if bytes.len() % 4 != 0 {
+    if !bytes.len().is_multiple_of(4) {
         return Err(DecodeError::UnalignedInput);
     }
 
