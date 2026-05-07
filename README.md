@@ -18,7 +18,8 @@ A pure-Rust library that translates ARMv7 (A32) machine code bytes back into rea
 - Stack operations: PUSH, POP
 - Smart Aliasing: Automatically unwinds optimized single-register stack operations (e.g., `STR LR, [SP, #-4]!`) back into readable `push {lr}` / `pop {pc}` pseudo-instructions
 - Supervisor call: SVC
-- NOP
+- Hint instructions: NOP, YIELD, WFE, WFI, SEV
+- Breakpoint: BKPT (always unconditional)
 - Condition codes and `s` flags gracefully appended (e.g., `addeq`, `movs`)
 - Safe fallback: Unrecognized or invalid data bytes are safely decoded as `.word 0x...` directives instead of crashing
 - Endianness selection (Little/Big)
@@ -82,13 +83,14 @@ let instructions = disassemble_with_options(&bytes, options).unwrap();
 
 | Category             | Mnemonics                                                       |
 |----------------------|-----------------------------------------------------------------|
-| Data processing      | MOV, MVN, ADD, SUB, RSB, ADC, SBC, RSC, AND, ORR, EOR, BIC       |
-| Comparisons          | CMP, CMN, TST, TEQ                                               |
+| Data processing      | MOV, MVN, ADD, SUB, RSB, ADC, SBC, RSC, AND, ORR, EOR, BIC      |
+| Comparisons          | CMP, CMN, TST, TEQ                                              |
 | Load/Store           | LDR, STR, LDRB, STRB                                            |
 | Multiply             | MUL                                                             |
 | Stack                | PUSH, POP (Including implicit LDR/STR unwinding)                |
 | Branch               | B, BL, BX                                                       |
 | Supervisor           | SVC                                                             |
+| Hints & Breakpoint   | NOP, YIELD, WFE, WFI, SEV, BKPT                                 |
 | Misc                 | NOP, `.word` (Fallback for arbitrary data blocks)               |
 
 ### Disassembly Formatting Output
@@ -97,6 +99,7 @@ let instructions = disassemble_with_options(&bytes, options).unwrap();
 - **Register**: Outputs standard ABI lowercase aliases (`r0`-`r12`, `sp`, `lr`, `pc`).
 - **Shifts**: Correctly unpacks `r1, lsl #2`, `r2, ror r3`, `r4, rrx`.
 - **Memory**: Resolves offset signs cleanly: `[r1, #-4]` vs `[r1, #4]`.
+- **Hints & BKPT** – Hint instructions (NOP, YIELD, WFE, WFI, SEV) may carry a condition code; `BKPT` is always unconditional and printed as `bkpt #0x…`.
 
 ---
 
