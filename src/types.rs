@@ -346,12 +346,32 @@ pub enum Instruction {
     Nop {
         cond: Condition,
     },
+    Yield {
+        cond: Condition,
+    },
+    Wfe {
+        cond: Condition,
+    },
+    Wfi {
+        cond: Condition,
+    },
+    Sev {
+        cond: Condition,
+    },
+    Bkpt {
+        imm: u16,
+    },
 }
 
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Instruction::Nop { cond } => write!(f, "nop{}", cond),
+            Instruction::Yield { cond } => write!(f, "yield{}", cond),
+            Instruction::Wfe { cond } => write!(f, "wfe{}", cond),
+            Instruction::Wfi { cond } => write!(f, "wfi{}", cond),
+            Instruction::Sev { cond } => write!(f, "sev{}", cond),
+            Instruction::Bkpt { imm } => write!(f, "bkpt {}", format_imm(*imm as u32)),
             Instruction::Svc { cond, imm } => write!(f, "svc{} {}", cond, format_imm(*imm)),
             Instruction::BranchExchange { cond, rm } => write!(f, "bx{} {}", cond, rm),
             Instruction::Branch {

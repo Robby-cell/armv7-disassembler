@@ -4,9 +4,23 @@ use crate::types::*;
 pub fn decode_word(word: u32, addr: u32) -> Result<Instruction, DecodeError> {
     let cond = Condition::from_code(word >> 28)?;
 
-    // NOP
-    if (word & 0x0FFFFFFF) == 0x0320F000 {
-        return Ok(Instruction::Nop { cond });
+    // Hints (NOP, YIELD, WFE, WFI, SEV)
+    if (word & 0x0FFFFFF0) == 0x0320F000 {
+        match word & 0xF {
+            0 => return Ok(Instruction::Nop { cond }),
+            1 => return Ok(Instruction::Yield { cond }),
+            2 => return Ok(Instruction::Wfe { cond }),
+            3 => return Ok(Instruction::Wfi { cond }),
+            4 => return Ok(Instruction::Sev { cond }),
+            _ => {} // Fall through to unspecified or default behaviour
+        }
+    }
+    // BKPT (Always unconditional 'AL')
+    if (word & 0xFFF000F0) == 0xE1200070 {
+        let imm12 = (word >> 8) & 0xFFF;
+        let imm4 = word & 0xF;
+        let imm = (imm12 << 4) | imm4;
+        return Ok(Instruction::Bkpt { imm: imm as u16 });
     }
     // BX
     if (word & 0x0FFFFFF0) == 0x012FFF10 {
@@ -69,7 +83,7 @@ pub fn decode_word(word: u32, addr: u32) -> Result<Instruction, DecodeError> {
         let link = (word & (1 << 24)) != 0;
         let mut imm24 = word & 0x00FFFFFF;
         if (imm24 & 0x00800000) != 0 {
-            imm24 |= 0xFF000000; // Sign extend
+            imm24 |= 0xFF000000;
         }
         let offset = imm24 as i32;
         let target_addr = (addr.wrapping_add(8)).wrapping_add_signed(offset << 2);
