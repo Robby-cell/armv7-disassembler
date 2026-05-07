@@ -124,7 +124,7 @@ match disassemble(&bytes) {
 Build with `wasm-pack`:
 
 ```bash
-wasm-pack build --target web
+wasm-pack build --target web --features wasm
 ```
 
 Then use in JavaScript:

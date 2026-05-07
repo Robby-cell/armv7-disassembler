@@ -162,7 +162,7 @@ pub fn decode_word(word: u32, addr: u32) -> Result<Instruction, DecodeError> {
         };
 
         let rn_opt = match opcode {
-            DataOpcode::MOV | DataOpcode::MVN => None,
+            DataOpcode::Mov | DataOpcode::Mvn => None,
             _ => Some(rn),
         };
 

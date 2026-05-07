@@ -16,9 +16,9 @@ pub enum Register {
     R10,
     R11,
     R12,
-    SP,
-    LR,
-    PC,
+    Sp,
+    Lr,
+    Pc,
 }
 
 impl Register {
@@ -37,9 +37,9 @@ impl Register {
             10 => Ok(Register::R10),
             11 => Ok(Register::R11),
             12 => Ok(Register::R12),
-            13 => Ok(Register::SP),
-            14 => Ok(Register::LR),
-            15 => Ok(Register::PC),
+            13 => Ok(Register::Sp),
+            14 => Ok(Register::Lr),
+            15 => Ok(Register::Pc),
             _ => Err(DecodeError::InvalidRegisterCode { code }),
         }
     }
@@ -61,9 +61,9 @@ impl fmt::Display for Register {
             Register::R10 => "r10",
             Register::R11 => "r11",
             Register::R12 => "r12",
-            Register::SP => "sp",
-            Register::LR => "lr",
-            Register::PC => "pc",
+            Register::Sp => "sp",
+            Register::Lr => "lr",
+            Register::Pc => "pc",
         };
         write!(f, "{}", s)
     }
@@ -71,41 +71,41 @@ impl fmt::Display for Register {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Condition {
-    EQ,
-    NE,
-    CS,
-    CC,
-    MI,
-    PL,
-    VS,
-    VC,
-    HI,
-    LS,
-    GE,
-    LT,
-    GT,
-    LE,
-    AL,
+    Eq,
+    Ne,
+    Cs,
+    Cc,
+    Mi,
+    Pl,
+    Vs,
+    Vc,
+    Hi,
+    Ls,
+    Ge,
+    Lt,
+    Gt,
+    Le,
+    Al,
 }
 
 impl Condition {
     pub fn from_code(code: u32) -> Result<Self, DecodeError> {
         match code {
-            0x0 => Ok(Condition::EQ),
-            0x1 => Ok(Condition::NE),
-            0x2 => Ok(Condition::CS),
-            0x3 => Ok(Condition::CC),
-            0x4 => Ok(Condition::MI),
-            0x5 => Ok(Condition::PL),
-            0x6 => Ok(Condition::VS),
-            0x7 => Ok(Condition::VC),
-            0x8 => Ok(Condition::HI),
-            0x9 => Ok(Condition::LS),
-            0xA => Ok(Condition::GE),
-            0xB => Ok(Condition::LT),
-            0xC => Ok(Condition::GT),
-            0xD => Ok(Condition::LE),
-            0xE => Ok(Condition::AL),
+            0x0 => Ok(Condition::Eq),
+            0x1 => Ok(Condition::Ne),
+            0x2 => Ok(Condition::Cs),
+            0x3 => Ok(Condition::Cc),
+            0x4 => Ok(Condition::Mi),
+            0x5 => Ok(Condition::Pl),
+            0x6 => Ok(Condition::Vs),
+            0x7 => Ok(Condition::Vc),
+            0x8 => Ok(Condition::Hi),
+            0x9 => Ok(Condition::Ls),
+            0xA => Ok(Condition::Ge),
+            0xB => Ok(Condition::Lt),
+            0xC => Ok(Condition::Gt),
+            0xD => Ok(Condition::Le),
+            0xE => Ok(Condition::Al),
             _ => Err(DecodeError::InvalidConditionCode { code }),
         }
     }
@@ -114,21 +114,21 @@ impl Condition {
 impl fmt::Display for Condition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            Condition::AL => "",
-            Condition::EQ => "eq",
-            Condition::NE => "ne",
-            Condition::CS => "cs",
-            Condition::CC => "cc",
-            Condition::MI => "mi",
-            Condition::PL => "pl",
-            Condition::VS => "vs",
-            Condition::VC => "vc",
-            Condition::HI => "hi",
-            Condition::LS => "ls",
-            Condition::GE => "ge",
-            Condition::LT => "lt",
-            Condition::GT => "gt",
-            Condition::LE => "le",
+            Condition::Al => "",
+            Condition::Eq => "eq",
+            Condition::Ne => "ne",
+            Condition::Cs => "cs",
+            Condition::Cc => "cc",
+            Condition::Mi => "mi",
+            Condition::Pl => "pl",
+            Condition::Vs => "vs",
+            Condition::Vc => "vc",
+            Condition::Hi => "hi",
+            Condition::Ls => "ls",
+            Condition::Ge => "ge",
+            Condition::Lt => "lt",
+            Condition::Gt => "gt",
+            Condition::Le => "le",
         };
         write!(f, "{}", s)
     }
@@ -136,19 +136,19 @@ impl fmt::Display for Condition {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ShiftType {
-    LSL,
-    LSR,
-    ASR,
-    ROR,
+    LSl,
+    Lsr,
+    Asr,
+    Ror,
 }
 
 impl ShiftType {
     pub fn from_code(code: u32) -> Result<Self, DecodeError> {
         match code {
-            0 => Ok(ShiftType::LSL),
-            1 => Ok(ShiftType::LSR),
-            2 => Ok(ShiftType::ASR),
-            3 => Ok(ShiftType::ROR),
+            0 => Ok(ShiftType::LSl),
+            1 => Ok(ShiftType::Lsr),
+            2 => Ok(ShiftType::Asr),
+            3 => Ok(ShiftType::Ror),
             _ => Err(DecodeError::InvalidShiftType { code }),
         }
     }
@@ -157,10 +157,10 @@ impl ShiftType {
 impl fmt::Display for ShiftType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ShiftType::LSL => "lsl",
-            ShiftType::LSR => "lsr",
-            ShiftType::ASR => "asr",
-            ShiftType::ROR => "ror",
+            ShiftType::LSl => "lsl",
+            ShiftType::Lsr => "lsr",
+            ShiftType::Asr => "asr",
+            ShiftType::Ror => "ror",
         };
         write!(f, "{}", s)
     }
@@ -168,43 +168,43 @@ impl fmt::Display for ShiftType {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DataOpcode {
-    AND,
-    EOR,
-    SUB,
-    RSB,
-    ADD,
-    ADC,
-    SBC,
-    RSC,
-    TST,
-    TEQ,
-    CMP,
-    CMN,
-    ORR,
-    MOV,
-    BIC,
-    MVN,
+    And,
+    Eor,
+    Sub,
+    Rsb,
+    Add,
+    Adc,
+    Sbc,
+    Rsc,
+    Tst,
+    Teq,
+    Cmp,
+    Cmn,
+    Orr,
+    Mov,
+    Bic,
+    Mvn,
 }
 
 impl DataOpcode {
     pub fn from_code(code: u32) -> Result<Self, DecodeError> {
         match code {
-            0x0 => Ok(DataOpcode::AND),
-            0x1 => Ok(DataOpcode::EOR),
-            0x2 => Ok(DataOpcode::SUB),
-            0x3 => Ok(DataOpcode::RSB),
-            0x4 => Ok(DataOpcode::ADD),
-            0x5 => Ok(DataOpcode::ADC),
-            0x6 => Ok(DataOpcode::SBC),
-            0x7 => Ok(DataOpcode::RSC),
-            0x8 => Ok(DataOpcode::TST),
-            0x9 => Ok(DataOpcode::TEQ),
-            0xA => Ok(DataOpcode::CMP),
-            0xB => Ok(DataOpcode::CMN),
-            0xC => Ok(DataOpcode::ORR),
-            0xD => Ok(DataOpcode::MOV),
-            0xE => Ok(DataOpcode::BIC),
-            0xF => Ok(DataOpcode::MVN),
+            0x0 => Ok(DataOpcode::And),
+            0x1 => Ok(DataOpcode::Eor),
+            0x2 => Ok(DataOpcode::Sub),
+            0x3 => Ok(DataOpcode::Rsb),
+            0x4 => Ok(DataOpcode::Add),
+            0x5 => Ok(DataOpcode::Adc),
+            0x6 => Ok(DataOpcode::Sbc),
+            0x7 => Ok(DataOpcode::Rsc),
+            0x8 => Ok(DataOpcode::Tst),
+            0x9 => Ok(DataOpcode::Teq),
+            0xA => Ok(DataOpcode::Cmp),
+            0xB => Ok(DataOpcode::Cmn),
+            0xC => Ok(DataOpcode::Orr),
+            0xD => Ok(DataOpcode::Mov),
+            0xE => Ok(DataOpcode::Bic),
+            0xF => Ok(DataOpcode::Mvn),
             _ => Err(DecodeError::InvalidOpcode { code }),
         }
     }
@@ -213,22 +213,22 @@ impl DataOpcode {
 impl fmt::Display for DataOpcode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            DataOpcode::AND => "and",
-            DataOpcode::EOR => "eor",
-            DataOpcode::SUB => "sub",
-            DataOpcode::RSB => "rsb",
-            DataOpcode::ADD => "add",
-            DataOpcode::ADC => "adc",
-            DataOpcode::SBC => "sbc",
-            DataOpcode::RSC => "rsc",
-            DataOpcode::TST => "tst",
-            DataOpcode::TEQ => "teq",
-            DataOpcode::CMP => "cmp",
-            DataOpcode::CMN => "cmn",
-            DataOpcode::ORR => "orr",
-            DataOpcode::MOV => "mov",
-            DataOpcode::BIC => "bic",
-            DataOpcode::MVN => "mvn",
+            DataOpcode::And => "and",
+            DataOpcode::Eor => "eor",
+            DataOpcode::Sub => "sub",
+            DataOpcode::Rsb => "rsb",
+            DataOpcode::Add => "add",
+            DataOpcode::Adc => "adc",
+            DataOpcode::Sbc => "sbc",
+            DataOpcode::Rsc => "rsc",
+            DataOpcode::Tst => "tst",
+            DataOpcode::Teq => "teq",
+            DataOpcode::Cmp => "cmp",
+            DataOpcode::Cmn => "cmn",
+            DataOpcode::Orr => "orr",
+            DataOpcode::Mov => "mov",
+            DataOpcode::Bic => "bic",
+            DataOpcode::Mvn => "mvn",
         };
         write!(f, "{}", s)
     }
@@ -426,17 +426,17 @@ impl fmt::Display for Instruction {
                 let s_str = if *s
                     && !matches!(
                         opcode,
-                        DataOpcode::CMP | DataOpcode::CMN | DataOpcode::TST | DataOpcode::TEQ
+                        DataOpcode::Cmp | DataOpcode::Cmn | DataOpcode::Tst | DataOpcode::Teq
                     ) {
                     "s"
                 } else {
                     ""
                 };
                 match opcode {
-                    DataOpcode::MOV | DataOpcode::MVN => {
+                    DataOpcode::Mov | DataOpcode::Mvn => {
                         write!(f, "{}{}{} {}, {}", opcode, cond, s_str, rd, operand2)
                     }
-                    DataOpcode::CMP | DataOpcode::CMN | DataOpcode::TST | DataOpcode::TEQ => {
+                    DataOpcode::Cmp | DataOpcode::Cmn | DataOpcode::Tst | DataOpcode::Teq => {
                         write!(f, "{}{} {}, {}", opcode, cond, rn.unwrap(), operand2)
                     }
                     _ => write!(
