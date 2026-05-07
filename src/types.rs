@@ -234,6 +234,30 @@ impl fmt::Display for DataOpcode {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ExtraOp {
+    Strh,
+    Ldrh,
+    Strd,
+    Ldrd,
+    Ldrsb,
+    Ldrsh,
+}
+
+impl fmt::Display for ExtraOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExtraOp::Strh => "strh",
+            ExtraOp::Ldrh => "ldrh",
+            ExtraOp::Strd => "strd",
+            ExtraOp::Ldrd => "ldrd",
+            ExtraOp::Ldrsb => "ldrsb",
+            ExtraOp::Ldrsh => "ldrsh",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum ShifterOperand {
     Immediate(u32),
@@ -276,8 +300,8 @@ impl fmt::Display for ShifterOperand {
 #[derive(Debug, Clone)]
 pub enum AddressingMode {
     OffsetImmediate(Register, i32),
-    OffsetRegister(Register, Register),
-    OffsetScaled(Register, Register, ShiftType, u32),
+    OffsetRegister(Register, Register, bool),
+    OffsetScaled(Register, Register, ShiftType, u32, bool),
 }
 
 impl fmt::Display for AddressingMode {
@@ -290,9 +314,13 @@ impl fmt::Display for AddressingMode {
                     write!(f, "[{}, {}]", rn, format_offset(*offset))
                 }
             }
-            AddressingMode::OffsetRegister(rn, rm) => write!(f, "[{}, {}]", rn, rm),
-            AddressingMode::OffsetScaled(rn, rm, st, imm) => {
-                write!(f, "[{}, {}, {} #{}]", rn, rm, st, imm)
+            AddressingMode::OffsetRegister(rn, rm, pos) => {
+                let sign = if *pos { "" } else { "-" };
+                write!(f, "[{}, {}{}]", rn, sign, rm)
+            }
+            AddressingMode::OffsetScaled(rn, rm, st, imm, pos) => {
+                let sign = if *pos { "" } else { "-" };
+                write!(f, "[{}, {}{}, {} #{}]", rn, sign, rm, st, imm)
             }
         }
     }
@@ -315,6 +343,12 @@ pub enum Instruction {
         rd: Register,
         addressing: AddressingMode,
     },
+    LoadStoreExtra {
+        cond: Condition,
+        op: ExtraOp,
+        rd: Register,
+        addressing: AddressingMode,
+    },
     Push {
         cond: Condition,
         reg_list: Vec<Register>,
@@ -326,6 +360,28 @@ pub enum Instruction {
     Multiply {
         cond: Condition,
         s: bool,
+        rd: Register,
+        rn: Register,
+        rm: Register,
+    },
+    MultiplyAccumulate {
+        cond: Condition,
+        s: bool,
+        rd: Register,
+        rn: Register,
+        rm: Register,
+        ra: Register,
+    },
+    MultiplySubtract {
+        cond: Condition,
+        rd: Register,
+        rn: Register,
+        rm: Register,
+        ra: Register,
+    },
+    Divide {
+        cond: Condition,
+        signed: bool,
         rd: Register,
         rn: Register,
         rm: Register,
@@ -392,6 +448,36 @@ impl fmt::Display for Instruction {
                 let s_str = if *s { "s" } else { "" };
                 write!(f, "mul{}{} {}, {}, {}", cond, s_str, rd, rn, rm)
             }
+            Instruction::MultiplyAccumulate {
+                cond,
+                s,
+                rd,
+                rn,
+                rm,
+                ra,
+            } => {
+                let s_str = if *s { "s" } else { "" };
+                write!(f, "mla{}{} {}, {}, {}, {}", cond, s_str, rd, rn, rm, ra)
+            }
+            Instruction::MultiplySubtract {
+                cond,
+                rd,
+                rn,
+                rm,
+                ra,
+            } => {
+                write!(f, "mls{} {}, {}, {}, {}", cond, rd, rn, rm, ra)
+            }
+            Instruction::Divide {
+                cond,
+                signed,
+                rd,
+                rn,
+                rm,
+            } => {
+                let mnem = if *signed { "sdiv" } else { "udiv" };
+                write!(f, "{}{} {}, {}, {}", mnem, cond, rd, rn, rm)
+            }
             Instruction::Push { cond, reg_list } => {
                 let regs: Vec<String> = reg_list.iter().map(|r| r.to_string()).collect();
                 write!(f, "push{} {{{}}}", cond, regs.join(", "))
@@ -414,6 +500,14 @@ impl fmt::Display for Instruction {
                     (false, true) => "strb",
                 };
                 write!(f, "{}{} {}, {}", mnem, cond, rd, addressing)
+            }
+            Instruction::LoadStoreExtra {
+                cond,
+                op,
+                rd,
+                addressing,
+            } => {
+                write!(f, "{}{} {}, {}", op, cond, rd, addressing)
             }
             Instruction::DataProcessing {
                 cond,

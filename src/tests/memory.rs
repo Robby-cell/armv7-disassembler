@@ -32,3 +32,17 @@ fn test_decode_push_pop_multi() {
     let strings = disassemble(&push).unwrap();
     assert_eq!(strings[0], "push {r11, lr}");
 }
+
+#[test]
+fn test_decode_strh() {
+    let bytes = vec![0xb4, 0x00, 0xc1, 0xe1]; // strh r0, [r1, #4]
+    let strings = disassemble(&bytes).unwrap();
+    assert_eq!(strings[0], "strh r0, [r1, #4]");
+}
+
+#[test]
+fn test_decode_ldrsb() {
+    let bytes = vec![0xd2, 0x00, 0x91, 0xe1]; // ldrsb r0, [r1, r2]
+    let strings = disassemble(&bytes).unwrap();
+    assert_eq!(strings[0], "ldrsb r0, [r1, r2]");
+}

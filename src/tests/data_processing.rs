@@ -27,3 +27,31 @@ fn test_decode_mul() {
     let strings = disassemble(&bytes).unwrap();
     assert_eq!(strings[0], "mul r0, r1, r2");
 }
+
+#[test]
+fn test_decode_mla() {
+    let bytes = vec![0x91, 0x32, 0x20, 0xe0]; // mla r0, r1, r2, r3
+    let strings = disassemble(&bytes).unwrap();
+    assert_eq!(strings[0], "mla r0, r1, r2, r3");
+}
+
+#[test]
+fn test_decode_mls() {
+    let bytes = vec![0x91, 0x32, 0x60, 0xe0]; // mls r0, r1, r2, r3
+    let strings = disassemble(&bytes).unwrap();
+    assert_eq!(strings[0], "mls r0, r1, r2, r3");
+}
+
+#[test]
+fn test_decode_sdiv() {
+    let bytes = vec![0x11, 0xf2, 0x10, 0xe7]; // sdiv r0, r1, r2
+    let strings = disassemble(&bytes).unwrap();
+    assert_eq!(strings[0], "sdiv r0, r1, r2");
+}
+
+#[test]
+fn test_decode_udiv() {
+    let bytes = vec![0x11, 0xf2, 0x30, 0xe7]; // udiv r0, r1, r2
+    let strings = disassemble(&bytes).unwrap();
+    assert_eq!(strings[0], "udiv r0, r1, r2");
+}
