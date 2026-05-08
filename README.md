@@ -34,7 +34,7 @@ Add the library to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armv7-disassembler = { git = "https://github.com/Robby-cell/armv7-disassembler.git", tag = "0.2.0" }
+armv7-disassembler = { git = "https://github.com/Robby-cell/armv7-disassembler.git", tag = "0.3.0" }
 ```
 
 Then disassemble some bytes:
