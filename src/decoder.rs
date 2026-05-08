@@ -135,6 +135,97 @@ pub fn decode_word(word: u32, addr: u32) -> Result<Instruction, DecodeError> {
             target_addr,
         });
     }
+    // MOVW / MOVT
+    if (word & 0x0FF00000) == 0x03000000 {
+        let imm16 = (((word >> 16) & 0xF) << 12) | (word & 0xFFF);
+        let rd = Register::from_code((word >> 12) & 0xF)?;
+        return Ok(Instruction::MoveWide {
+            cond,
+            to_upper: false,
+            rd,
+            imm: imm16 as u16,
+        });
+    }
+    if (word & 0x0FF00000) == 0x03400000 {
+        let imm16 = (((word >> 16) & 0xF) << 12) | (word & 0xFFF);
+        let rd = Register::from_code((word >> 12) & 0xF)?;
+        return Ok(Instruction::MoveWide {
+            cond,
+            to_upper: true,
+            rd,
+            imm: imm16 as u16,
+        });
+    }
+    // LDM / STM (generic, including PUSH/POP base)
+    if (word & 0x0E000000) == 0x08000000 {
+        let l = (word & (1 << 20)) != 0; // load (1) / store (0)
+        let p = (word & (1 << 24)) != 0; // pre-indexed
+        let u = (word & (1 << 23)) != 0; // up/down
+        let w = (word & (1 << 21)) != 0; // write-back
+        let rn = Register::from_code((word >> 16) & 0xF)?;
+        let mask = word & 0xFFFF;
+        let reg_list = decode_reg_list(mask);
+        return Ok(Instruction::LoadStoreMultiple {
+            cond,
+            load: l,
+            pre: p,
+            up: u,
+            wb: w,
+            rn,
+            reg_list,
+        });
+    }
+    // Sign/Zero Extend  (SXTB, UXTB, SXTH, UXTH)
+    if (word & 0x0FAF00F0) == 0x06AF0070 {
+        let unsigned = (word & (1 << 22)) != 0;
+        let size16 = (word & (1 << 20)) != 0;
+        let signed = !unsigned;
+        let rd = Register::from_code((word >> 12) & 0xF)?;
+        let rm = Register::from_code(word & 0xF)?;
+        let rotate = ((word >> 10) & 0x3) * 8; // bits 11:10
+        return Ok(Instruction::Extend {
+            cond,
+            signed,
+            size16,
+            rd,
+            rm,
+            rotate,
+        });
+    }
+    // Reverse  (REV, REV16, REVSH)
+    // REV
+    if (word & 0x0FFF0FF0) == 0x06BF0F30 {
+        let rd = Register::from_code((word >> 12) & 0xF)?;
+        let rm = Register::from_code(word & 0xF)?;
+        return Ok(Instruction::Reverse {
+            cond,
+            op: ReverseOp::Rev,
+            rd,
+            rm,
+        });
+    }
+    // REV16
+    if (word & 0x0FFF0FF0) == 0x06BF0FB0 {
+        let rd = Register::from_code((word >> 12) & 0xF)?;
+        let rm = Register::from_code(word & 0xF)?;
+        return Ok(Instruction::Reverse {
+            cond,
+            op: ReverseOp::Rev16,
+            rd,
+            rm,
+        });
+    }
+    // REVSH
+    if (word & 0x0FFF0FF0) == 0x06FF0FB0 {
+        let rd = Register::from_code((word >> 12) & 0xF)?;
+        let rm = Register::from_code(word & 0xF)?;
+        return Ok(Instruction::Reverse {
+            cond,
+            op: ReverseOp::Revsh,
+            rd,
+            rm,
+        });
+    }
     // Load/Store Extra (LDRH, STRH, LDRD, STRD, LDRSB, LDRSH)
     if (word & 0x0E000090) == 0x00000090 && (word & 0x00000060) != 0 {
         let l = (word & (1 << 20)) != 0;

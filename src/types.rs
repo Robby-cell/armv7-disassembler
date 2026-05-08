@@ -326,6 +326,24 @@ impl fmt::Display for AddressingMode {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ReverseOp {
+    Rev,
+    Rev16,
+    Revsh,
+}
+
+impl fmt::Display for ReverseOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ReverseOp::Rev => "rev",
+            ReverseOp::Rev16 => "rev16",
+            ReverseOp::Revsh => "revsh",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 pub enum Instruction {
     DataProcessing {
@@ -417,6 +435,35 @@ pub enum Instruction {
     Bkpt {
         imm: u16,
     },
+    MoveWide {
+        cond: Condition,
+        to_upper: bool,
+        rd: Register,
+        imm: u16,
+    },
+    LoadStoreMultiple {
+        cond: Condition,
+        load: bool,
+        pre: bool,
+        up: bool,
+        wb: bool,
+        rn: Register,
+        reg_list: Vec<Register>,
+    },
+    Extend {
+        cond: Condition,
+        signed: bool,
+        size16: bool,
+        rd: Register,
+        rm: Register,
+        rotate: u32,
+    },
+    Reverse {
+        cond: Condition,
+        op: ReverseOp,
+        rd: Register,
+        rm: Register,
+    },
 }
 
 impl fmt::Display for Instruction {
@@ -465,9 +512,7 @@ impl fmt::Display for Instruction {
                 rn,
                 rm,
                 ra,
-            } => {
-                write!(f, "mls{} {}, {}, {}, {}", cond, rd, rn, rm, ra)
-            }
+            } => write!(f, "mls{} {}, {}, {}, {}", cond, rd, rn, rm, ra),
             Instruction::Divide {
                 cond,
                 signed,
@@ -506,9 +551,7 @@ impl fmt::Display for Instruction {
                 op,
                 rd,
                 addressing,
-            } => {
-                write!(f, "{}{} {}, {}", op, cond, rd, addressing)
-            }
+            } => write!(f, "{}{} {}, {}", op, cond, rd, addressing),
             Instruction::DataProcessing {
                 cond,
                 s,
@@ -545,6 +588,65 @@ impl fmt::Display for Instruction {
                     ),
                 }
             }
+            Instruction::MoveWide {
+                cond,
+                to_upper,
+                rd,
+                imm,
+            } => {
+                let mnem = if *to_upper { "movt" } else { "movw" };
+                write!(f, "{}{} {}, {}", mnem, cond, rd, format_imm(*imm as u32))
+            }
+            Instruction::LoadStoreMultiple {
+                cond,
+                load,
+                pre,
+                up,
+                wb,
+                rn,
+                reg_list,
+            } => {
+                let mnem = if *load { "ldm" } else { "stm" };
+                let am = match (*pre, *up) {
+                    (false, true) => "ia",
+                    (true, true) => "ib",
+                    (false, false) => "da",
+                    (true, false) => "db",
+                };
+                let wb_str = if *wb { "!" } else { "" };
+                let regs: Vec<String> = reg_list.iter().map(|r| r.to_string()).collect();
+                write!(
+                    f,
+                    "{}{}{} {}{}, {{{}}}",
+                    mnem,
+                    cond,
+                    am,
+                    rn,
+                    wb_str,
+                    regs.join(", ")
+                )
+            }
+            Instruction::Extend {
+                cond,
+                signed,
+                size16,
+                rd,
+                rm,
+                rotate,
+            } => {
+                let mnem = match (*signed, *size16) {
+                    (false, false) => "uxtb",
+                    (false, true) => "uxth",
+                    (true, false) => "sxtb",
+                    (true, true) => "sxth",
+                };
+                if *rotate == 0 {
+                    write!(f, "{}{} {}, {}", mnem, cond, rd, rm)
+                } else {
+                    write!(f, "{}{} {}, {}, ror #{}", mnem, cond, rd, rm, rotate)
+                }
+            }
+            Instruction::Reverse { cond, op, rd, rm } => write!(f, "{}{} {}, {}", op, cond, rd, rm),
         }
     }
 }

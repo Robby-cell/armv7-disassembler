@@ -55,3 +55,60 @@ fn test_decode_udiv() {
     let strings = disassemble(&bytes).unwrap();
     assert_eq!(strings[0], "udiv r0, r1, r2");
 }
+
+#[test]
+fn test_movw_movt() {
+    // movw r0, #0x5678 (E3050678)
+    let bytes = vec![0x78, 0x06, 0x05, 0xe3];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "movw r0, #0x5678");
+
+    // movt r0, #0x1234 (E3410234)
+    let bytes = vec![0x34, 0x02, 0x41, 0xe3];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "movt r0, #0x1234");
+}
+
+#[test]
+fn test_ldm_stm() {
+    // ldmia r0!, {r1, r2} (E8B00006)
+    let bytes = vec![0x06, 0x00, 0xb0, 0xe8];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "ldmia r0!, {r1, r2}");
+
+    // stmdb r0!, {r1, r2} (E9200006)
+    let bytes = vec![0x06, 0x00, 0x20, 0xe9];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "stmdb r0!, {r1, r2}");
+}
+
+#[test]
+fn test_extend() {
+    // sxtb r0, r1 (E6AF0071)
+    let bytes = vec![0x71, 0x00, 0xaf, 0xe6];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "sxtb r0, r1");
+
+    // uxth r0, r1, ror #8 (E6FF0471)
+    let bytes = vec![0x71, 0x04, 0xff, 0xe6];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "uxth r0, r1, ror #8");
+}
+
+#[test]
+fn test_reverse() {
+    // rev r0, r1 (E6BF0F31)
+    let bytes = vec![0x31, 0x0f, 0xbf, 0xe6];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "rev r0, r1");
+
+    // rev16 r0, r1 (E6BF0FB1)
+    let bytes = vec![0xb1, 0x0f, 0xbf, 0xe6];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "rev16 r0, r1");
+
+    // revsh r0, r1 (E6FF0FB1)
+    let bytes = vec![0xb1, 0x0f, 0xff, 0xe6];
+    let insts = disassemble(&bytes).unwrap();
+    assert_eq!(insts[0], "revsh r0, r1");
+}
