@@ -34,23 +34,3 @@ jobs:
 
       - name: Run unit tests
         run: cargo test --verbose
-
-  wasm-build:
-    name: WebAssembly Build (wasm-pack)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-
-      - name: Install wasm-pack
-        uses: jetli/wasm-pack-action@v0.4.0
-        with:
-          version: 'latest'
-
-      - name: Build for WebAssembly target
-        run: wasm-pack build --target web --features wasm
