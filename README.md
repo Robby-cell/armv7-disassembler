@@ -46,11 +46,11 @@ fn main() {
     // Machine code for:
     // mov r0, #42
     // bx lr
-    let machine_code: [u8; 8] =[0x2a, 0x00, 0xa0, 0xe3, 0x1e, 0xff, 0x2f, 0xe1];
+    let machine_code: [u8; 8] = [0x2a, 0x00, 0xa0, 0xe3, 0x1e, 0xff, 0x2f, 0xe1];
 
-    // disassemble() automatically uses DisassemblerOptions::default()
+    // disassemble() automatically uses the default options
     let instructions = disassemble(&machine_code).unwrap();
-    
+
     for instr in instructions {
         println!("{}", instr);
     }
@@ -61,17 +61,16 @@ fn main() {
 
 ## Disassembler Options
 
-You can control the decoding behavior, starting PC offset, and byte reading order via `DisassemblerOptions`. Both the types and the `disassemble_with_options` function are available in the prelude.
+You can control the decoding behavior, starting PC offset, and byte reading order via the `Decoder` object.
 
 ```rust
 use armv7_disassembler::prelude::*;
 
-let options = DisassemblerOptions {
-    start_address: 0x8000,
-    endian: Endian::Big,
-};
-
-let instructions = disassemble_with_options(&bytes, options).unwrap();
+ let instructions = Decoder::new()
+        .start_address(0x8000)
+        .endian(Endian::Big)
+        .disassemble(&bytes)
+        .unwrap();
 ```
 
 - `start_address` – Base address (PC) used to calculate absolute target addresses for branching instructions (`B`, `BL`).
